@@ -1,4 +1,3 @@
-from pyexpat import model
 import carla
 import random
 
@@ -42,16 +41,15 @@ for i, spawn_point in enumerate(spawn_points):
 
 # 各种车辆模型
 models = ['dodge', 'audi', 'model3', 'mini', 'mustang', 'lincoln', 'prius', 'nissan', 'crown', 'impala']
-blueprints = []
-for vehicle in world.get_blueprint_library().filter('*vehicle*'):
-    if any(model in vehicle.id for model in models):
-        blueprints.append(vehicle)
+blueprints = [vehicle for vehicle in world.get_blueprint_library().filter(
+    '*vehicle*') if any(model in vehicle.id for model in models)]
+
 # 设置最大车辆数量并为我们生成的车辆准备一份清单
 max_vehicles = 50
 max_vehicles = min(max_vehicles, len(spawn_points))
 vehicles = []
 # 随机抽取生成点样本并生成一些车辆
-for i, spawn_point in enumerate(random.sample(spawn_points, max_vehicles)):
+for spawn_point in random.sample(spawn_points, max_vehicles):
     temp = world.try_spawn_actor(random.choice(blueprints), spawn_point)
     if temp is not None:
         vehicles.append(temp)
@@ -83,17 +81,13 @@ for vehicle in vehicles:
 spawn_point_1 = spawn_points[32]
 # 从选定的生成点创建路线 1
 route_1_indices = [129, 28, 124, 33, 97, 119, 58, 154, 147]
-route_1 = []
-for ind in route_1_indices:
-    route_1.append(spawn_points[ind].location)
+route_1 = [spawn_points[ind].location for ind in route_1_indices]
 
 # Route 2
 spawn_point_2 = spawn_points[149]
 # 从选定的生成点创建路线 2
 route_2_indices = [21, 76, 38, 34, 90, 3]
-route_2 = []
-for ind in route_2_indices:
-    route_2.append(spawn_points[ind].location)
+route_2 = [spawn_points[ind].location for ind in route_2_indices]
 
 # 在地图上打印路线
 world.debug.draw_string(spawn_point_1.location, 'Spawn point 1', life_time=30, color=carla.Color(255, 0, 0))
