@@ -2,24 +2,18 @@
  Author         : maxiaoming
  Date           : 2022-06-22 10:39:50
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-06-27 10:39:52
+ LastEditTime   : 2022-07-04 10:57:37
  FilePath       : car_run_line.py
  Description    : Carla车辆跑直线并录视频
 """
-import os
-import sys
-
-sys.path.insert(0,
-    "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
-sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
-
-from csv import writer
-import numpy as np
-import cv2
-import random
-import carla
-import copy
 import argparse
+import copy
+import random
+
+import cv2
+import numpy as np
+
+import carla
 
 
 def main():
@@ -53,24 +47,34 @@ def main():
 
         points = {
             'Town01': (
-                carla.Transform(carla.Location(x=170.547531, y=59.902679, z=0.300000), carla.Rotation(pitch=0.000000, yaw=0.000061, roll=0.000000)),
-                carla.Transform(carla.Location(x=272.290009, y=57.330036, z=0.300000), carla.Rotation(pitch=0.000000, yaw=89.999756, roll=0.000000)),
+                carla.Transform(carla.Location(x=170.547531, y=59.902679, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=0.000061, roll=0.000000)),
+                carla.Transform(carla.Location(x=272.290009, y=57.330036, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=89.999756, roll=0.000000)),
             ),
             'Town02': (
-                carla.Transform(carla.Location(x=55.410027, y=109.399986, z=0.500000), carla.Rotation(pitch=0.000000, yaw=-0.000183, roll=0.000000)),
-                carla.Transform(carla.Location(x=151.750061, y=107.400040, z=0.500000), carla.Rotation(pitch=0.000000, yaw=89.999817, roll=0.000000)),
+                carla.Transform(carla.Location(x=55.410027, y=109.399986, z=0.500000),
+                                carla.Rotation(pitch=0.000000, yaw=-0.000183, roll=0.000000)),
+                carla.Transform(carla.Location(x=151.750061, y=107.400040, z=0.500000),
+                                carla.Rotation(pitch=0.000000, yaw=89.999817, roll=0.000000)),
             ),
             'Town03': (
-                carla.Transform(carla.Location(x=65.516594, y=7.808423, z=0.275307), carla.Rotation(pitch=0.000000, yaw=0.855823, roll=0.000000)),
-                carla.Transform(carla.Location(x=174.432999, y=9.808371, z=0.275307), carla.Rotation(pitch=0.000000, yaw=90.855804, roll=0.000000)),
+                carla.Transform(carla.Location(x=65.516594, y=7.808423, z=0.275307),
+                                carla.Rotation(pitch=0.000000, yaw=0.855823, roll=0.000000)),
+                carla.Transform(carla.Location(x=174.432999, y=9.808371, z=0.275307),
+                                carla.Rotation(pitch=0.000000, yaw=90.855804, roll=0.000000)),
             ),
             'Town04': (
-                carla.Transform(carla.Location(x=-13.030336, y=-140.432274, z=0.281942), carla.Rotation(pitch=0.000000, yaw=89.775162, roll=0.000000)),
-                carla.Transform(carla.Location(x=-12.754474, y=-49.132839, z=0.281942), carla.Rotation(pitch=0.000000, yaw=179.775162, roll=0.000000)),
+                carla.Transform(carla.Location(x=-13.030336, y=-140.432274, z=0.281942),
+                                carla.Rotation(pitch=0.000000, yaw=89.775162, roll=0.000000)),
+                carla.Transform(carla.Location(x=-12.754474, y=-49.132839, z=0.281942),
+                                carla.Rotation(pitch=0.000000, yaw=179.775162, roll=0.000000)),
             ),
             'Town05': (
-                carla.Transform(carla.Location(x=-128.395874, y=-42.550396, z=0.300000), carla.Rotation(pitch=0.000000, yaw=90.393547, roll=0.000000)),
-                carla.Transform(carla.Location(x=-127.747406, y=53.414654, z=0.300000), carla.Rotation(pitch=0.000000, yaw=179.488602, roll=0.000000)),
+                carla.Transform(carla.Location(x=-128.395874, y=-42.550396, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=90.393547, roll=0.000000)),
+                carla.Transform(carla.Location(x=-127.747406, y=53.414654, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=179.488602, roll=0.000000)),
             ),
         }
         args = argparser.parse_args()
@@ -89,8 +93,8 @@ def main():
         world = client.load_world(map_name)
         # 设置天气
         weather = carla.WeatherParameters(
-            #cloudiness=10.0,
-            #precipitation=10.0,
+            # cloudiness=10.0,
+            # precipitation=10.0,
             sun_altitude_angle=0
         )
         world.set_weather(weather)
