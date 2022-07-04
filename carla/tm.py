@@ -1,6 +1,6 @@
-import carla
 import random
 
+import carla
 
 # 链接carla并且初始化world对象
 client = carla.Client('localhost', 2000)
@@ -41,15 +41,16 @@ for i, spawn_point in enumerate(spawn_points):
 
 # 各种车辆模型
 models = ['dodge', 'audi', 'model3', 'mini', 'mustang', 'lincoln', 'prius', 'nissan', 'crown', 'impala']
-blueprints = [vehicle for vehicle in world.get_blueprint_library().filter(
-    '*vehicle*') if any(model in vehicle.id for model in models)]
-
+blueprints = []
+for vehicle in world.get_blueprint_library().filter('*vehicle*'):
+    if any(model in vehicle.id for model in models):
+        blueprints.append(vehicle)
 # 设置最大车辆数量并为我们生成的车辆准备一份清单
 max_vehicles = 50
 max_vehicles = min(max_vehicles, len(spawn_points))
 vehicles = []
 # 随机抽取生成点样本并生成一些车辆
-for spawn_point in random.sample(spawn_points, max_vehicles):
+for i, spawn_point in enumerate(random.sample(spawn_points, max_vehicles)):
     temp = world.try_spawn_actor(random.choice(blueprints), spawn_point)
     if temp is not None:
         vehicles.append(temp)

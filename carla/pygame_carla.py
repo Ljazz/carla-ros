@@ -20,7 +20,7 @@ settings.fixed_delta_seconds = 0.05
 world.apply_settings(settings)
 
 # 同步模式下设置 TM
-traffic_manager = client.get_trafficemanager()
+traffic_manager = client.get_trafficmanager()
 traffic_manager.set_synchronous_mode(True)
 
 # 设置种子，以便在必要时可以重复行为
@@ -55,7 +55,7 @@ vehicles = []
 for spawn_point in random.sample(spawn_points, max_vehicles):
     temp = world.try_spawn_actor(random.choice(blueprints), spawn_point)
     if temp is not None:
-        vehicle.append(temp)
+        vehicles.append(temp)
 # 解析生成的车辆列表并通过 set_autopilot() 将控制权交给 TM
 for vehicle in vehicles:
     vehicle.set_autopilot(True)
@@ -65,6 +65,8 @@ for vehicle in vehicles:
 # ------------------------------------------------------------
 # 使用 PyGame 渲染相机输出和控制车辆
 # ------------------------------------------------------------
+
+
 class RenderObject(object):
     def __init__(self, height, width):
         init_image = np.random.randint(0, 255, (height, width, 3), dtype="uint8")
@@ -88,7 +90,7 @@ class ControlObject(object):
         self._brake = False
         self._steer = None
         self._steer_cache = 0
-        # A carla.VehicleControl object is needed to alter the 
+        # A carla.VehicleControl object is needed to alter the
         # vehicle's control state
         self._control = carla.VehicleControl()
 
@@ -121,7 +123,7 @@ class ControlObject(object):
     # if the key remains pressed
     def process_control(self):
 
-        if self._throttle: 
+        if self._throttle:
             self._control.throttle = min(self._control.throttle + 0.01, 1)
             self._control.gear = 1
             self._control.brake = False
@@ -156,7 +158,7 @@ class ControlObject(object):
                 self._steer_cache *= 0.2
             if 0.01 > self._steer_cache > -0.01:
                 self._steer_cache = 0.0
-        self._control.steer = round(self._steer_cache,1)
+        self._control.steer = round(self._steer_cache, 1)
         # Ápply the control parameters to the ego vehicle
         self._vehicle.apply_control(self._control)
 
@@ -183,10 +185,10 @@ controlObject = ControlObject(ego_vehicle)
 
 # Initialise the display
 pygame.init()
-gameDisplay = pygame.display.set_mode((image_w,image_h), pygame.HWSURFACE | pygame.DOUBLEBUF)
+gameDisplay = pygame.display.set_mode((image_w, image_h), pygame.HWSURFACE | pygame.DOUBLEBUF)
 # Draw black to the display
-gameDisplay.fill((0,0,0))
-gameDisplay.blit(renderObject.surface, (0,0))
+gameDisplay.fill((0, 0, 0))
+gameDisplay.blit(renderObject.surface, (0, 0))
 pygame.display.flip()
 
 # Game loop
@@ -196,7 +198,7 @@ while not crashed:
     # Advance the simulation time
     world.tick()
     # Update the display
-    gameDisplay.blit(renderObject.surface, (0,0))
+    gameDisplay.blit(renderObject.surface, (0, 0))
     pygame.display.flip()
     # Process the current control state
     controlObject.process_control()
@@ -223,8 +225,8 @@ while not crashed:
                 camera.listen(lambda image: pygame_callback(image, renderObject))
 
                 # Update PyGame window
-                gameDisplay.fill((0,0,0))               
-                gameDisplay.blit(renderObject.surface, (0,0))
+                gameDisplay.fill((0, 0, 0))
+                gameDisplay.blit(renderObject.surface, (0, 0))
                 pygame.display.flip()
 
 # Stop camera and quit PyGame after exiting game loop
