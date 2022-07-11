@@ -2,8 +2,8 @@
  Author         : maxiaoming
  Date           : 2022-07-08 11:37:18
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-11 10:25:04
- FilePath       : sencond.py
+ LastEditTime   : 2022-07-11 17:50:48
+ FilePath       : autoDriving.py
  Description    : 
 """
 import math
@@ -111,7 +111,7 @@ class PIDLateralControl():
         v_end = v_begin + carla.Location(x=math.cos(math.radians(vehicle_transform.rotation.yaw)),
                                          y=math.sin(math.radians(vehicle_transform.rotation.yaw)))
         v_vec = np.array([v_end.x - v_begin.x, v_end.y - v_begin.y, 0.0])
-        w_vec = np.array([waypoint.transform.location.x - v_begin.x, waypoint.transform.y - v_begin.y, 0.0])
+        w_vec = np.array([waypoint.transform.location.x - v_begin.x, waypoint.transform.location.y - v_begin.y, 0.0])
 
         dot = math.acos(np.clip(np.dot(w_vec, v_vec) / np.linalg.norm(w_vec) * np.linalg.norm(v_vec), -1.0, 1.0))
         cross = np.cross(v_vec, w_vec)
