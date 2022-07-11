@@ -194,14 +194,11 @@ def main():
         world = client.get_world()
 
         blueprint_library = world.get_blueprint_library()
-
-        bp = blueprint_library.filter('model3')[0]
+        bp = blueprint_library.filter('bmw')[0]
         print(bp)
 
         spawn_point = random.choice(world.get_map().get_spawn_points())
-
         vehicle = world.spawn_actor(bp, spawn_point)
-        vehicle.apply_control(carla.VehicleControl(throttle=1.0, steer=0.0))
         actor_list.append(vehicle)
 
         # sleep for 5 seconds, then finish:

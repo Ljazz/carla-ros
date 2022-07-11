@@ -2,10 +2,16 @@
  Author         : maxiaoming
  Date           : 2022-06-22 10:39:50
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-04 11:35:11
- FilePath       : car_run_line.py
- Description    : Carla车辆跑直线并录视频
+ LastEditTime   : 2022-07-11 10:22:43
+ FilePath       : fixedSpeedDrive.py
+ Description    : 车辆以固定速度跑直线并录视频
 """
+import sys
+
+sys.path.insert(0,
+                "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
+sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
+
 import argparse
 import copy
 import random
@@ -38,11 +44,36 @@ def main():
         )
 
         points = {
-            'Town01': (carla.Transform(carla.Location(x=295.081757, y=199.060303, z=0.300000), carla.Rotation(pitch=0.000000, yaw=-0.000092, roll=0.000000)), carla.Transform(carla.Location(x=142.360550, y=198.759995, z=0.300000), carla.Rotation(pitch=0.000000, yaw=-0.000092, roll=0.000000))),
-            'Town02': (carla.Transform(carla.Location(x=189.929993, y=142.190002, z=0.500000), carla.Rotation(pitch=0.000000, yaw=89.999954, roll=0.000000)), carla.Transform(carla.Location(x=189.929993, y=293.540009, z=0.500000), carla.Rotation(pitch=0.000000, yaw=89.999954, roll=0.000000))),
-            'Town03': (carla.Transform(carla.Location(x=-18.582256, y=-204.674316, z=0.275307), carla.Rotation(pitch=0.000000, yaw=-178.560471, roll=0.000000)), carla.Transform(carla.Location(x=129.905441, y=-201.210129, z=0.275307), carla.Rotation(pitch=0.000000, yaw=-178.560471, roll=0.000000))),
-            'Town04': (carla.Transform(carla.Location(x=-9.890791, y=-211.274689, z=0.281942), carla.Rotation(pitch=0.000000, yaw=89.775124, roll=0.000000)), carla.Transform(carla.Location(x=-8.437963, y=128.214111, z=0.281942), carla.Rotation(pitch=0.000000, yaw=89.710899, roll=0.000000))),
-            'Town05': (carla.Transform(carla.Location(x=28.046694, y=163.645676, z=0.300000), carla.Rotation(pitch=0.000000, yaw=90.022896, roll=0.000000)), carla.Transform(carla.Location(x=32.147095, y=-176.243668, z=0.300000), carla.Rotation(pitch=0.000000, yaw=91.532082, roll=0.000000))),
+            'Town01': (
+                carla.Transform(carla.Location(x=222.550003, y=59.330017, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=-0.000092, roll=0.000000)),
+                carla.Transform(carla.Location(x=272.290009, y=57.330036, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=89.999756, roll=0.000000)),
+            ),
+            'Town02': (
+                carla.Transform(carla.Location(x=101.410019, y=109.299995, z=0.500000),
+                                carla.Rotation(pitch=0.000000, yaw=-0.000183, roll=0.000000)),
+                carla.Transform(carla.Location(x=151.750061, y=107.400040, z=0.500000),
+                                carla.Rotation(pitch=0.000000, yaw=89.999817, roll=0.000000)),
+            ),
+            'Town03': (
+                carla.Transform(carla.Location(x=124.075668, y=8.870760, z=0.275307),
+                                carla.Rotation(pitch=0.000000, yaw=0.855804, roll=0.000000)),
+                carla.Transform(carla.Location(x=174.432999, y=9.808371, z=0.275307),
+                                carla.Rotation(pitch=0.000000, yaw=90.855804, roll=0.000000)),
+            ),
+            'Town04': (
+                carla.Transform(carla.Location(x=-13.030336, y=-119.432274, z=0.281942),
+                                carla.Rotation(pitch=0.000000, yaw=89.775162, roll=0.000000)),
+                carla.Transform(carla.Location(x=-12.754474, y=-69.132839, z=0.281942),
+                                carla.Rotation(pitch=0.000000, yaw=179.775162, roll=0.000000)),
+            ),
+            'Town05': (
+                carla.Transform(carla.Location(x=-128.009949, y=.942020, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=90.393547, roll=0.000000)),
+                carla.Transform(carla.Location(x=-127.747406, y=53.414654, z=0.300000),
+                                carla.Rotation(pitch=0.000000, yaw=179.488602, roll=0.000000)),
+            ),
         }
 
         args = argparser.parse_args()
@@ -138,13 +169,13 @@ def main():
             Image_Array = array
 
         # 车辆运动参数
-        # my_vehicle.apply_control(carla.VehicleControl(throttle=0.3, steer=0))  # 油门控制
+        # my_vehicle.apply_control(carla.VehicleControl(throttle=0.3, steer=0))  # 油门控制车速
         my_vehicle.enable_constant_velocity(carla.Vector3D(3, 0, 0))
 
         width, height = int(image_size_x), int(image_size_y)  # 宽高
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 视频编解码器
         # fps = 30
-        fps = 24
+        fps = 30
         writer = cv2.VideoWriter(filename, fourcc, fps, (width, height))
         try:
             i = 0
@@ -154,7 +185,7 @@ def main():
                     image = copy.copy(Image_Array)
                     if 21 <= i <= 260:
                         writer.write(image)
-                    if i > 250:
+                    if i > 260:
                         break
                     cv2.imshow('Carla Tutorial', image)
                     if cv2.waitKey(25) & 0xFF == ord('q'):
