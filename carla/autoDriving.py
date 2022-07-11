@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-08 11:37:18
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-11 17:50:48
+ LastEditTime   : 2022-07-11 17:52:56
  FilePath       : autoDriving.py
  Description    : 
 """
@@ -141,7 +141,7 @@ def main():
         blueprintLibrary = world.get_blueprint_library()
         vehicle_bp = blueprintLibrary.filter('cybertruck')[0]
 
-        spawn_points = world.get_spawn_points()
+        spawn_points = world.get_map().get_spawn_points()
         spawn_point = carla.Transform(carla.Location(
             x=-9.895893, y=-212.574677, z=0.281942), carla.Rotation(pitch=0.000000, yaw=89.775124, roll=0.000000))
         vehicle = world.spawn_actor(vehicle_bp, spawn_point)
