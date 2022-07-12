@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-07 10:34:05
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-12 17:36:14
+ LastEditTime   : 2022-07-12 17:38:09
  FilePath       : changeTexturesThroughAPI.py
  Description    : 通过 API 更新纹理
 """
@@ -50,7 +50,7 @@ def main():
 
         for x in range(width):
             for y in range(height):
-                color = image[y][x]
+                color = image.getpixel((x, y))
                 r = int(color[0])
                 g = int(color[1])
                 b = int(color[2])
