@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-07 10:34:05
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-08 11:46:23
+ LastEditTime   : 2022-07-12 17:36:14
  FilePath       : changeTexturesThroughAPI.py
  Description    : 通过 API 更新纹理
 """
@@ -47,14 +47,15 @@ def main():
         #         g = int(color[1])
         #         b = int(color[2])
         #         texture.set(x, y, carla.Color(r, g, b, a))
-        for x in range(0, len(image[0])):
-            for y in range(0, len(image)):
+
+        for x in range(width):
+            for y in range(height):
                 color = image[y][x]
                 r = int(color[0])
                 g = int(color[1])
                 b = int(color[2])
                 a = int(color[3])
-                texture.set(x, height-y-1, carla.Color(r,g,b,a))
+                texture.set(x, height - y - 1, carla.Color(r, g, b, a))
 
         # 将纹理应用到资产
         world.apply_color_texture_to_object('duikang01_2', carla.MaterialParameter.Diffuse, texture, 0)
