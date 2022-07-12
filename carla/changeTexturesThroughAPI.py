@@ -16,6 +16,7 @@ sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
 from PIL import Image
 
 import carla
+import imageio
 
 
 def main():
@@ -33,12 +34,13 @@ def main():
             print(name)
 
         # 加载新的纹理
-        image = Image.open("D:/CARLA/carla/Unreal/CarlaUE4/Content/duikang01/Texture/duikangyangben.TGA")
-        height = image.height  # image.size[1]
-        width = image.width    # image.size[1]
-
-        # 实例化 carla.TextureColor 对象并填充包含修改后图像数据的像素
-        texture = carla.TextureColor(width, height)
+        # image = Image.open("D:/CARLA/workspace/carla-ros/carla/duikangyangben.png")
+        # height = image.height  # image.size[1]
+        # width = image.width    # image.size[0]
+        # height = image.size[1]
+        # width = image.size[0]
+        # # 实例化 carla.TextureColor 对象并填充包含修改后图像数据的像素
+        # texture = carla.TextureColor(width, height)
         # a = 255
         # for x in range(width):
         #     for y in range(height):
@@ -48,17 +50,22 @@ def main():
         #         b = int(color[2])
         #         texture.set(x, y, carla.Color(r, g, b, a))
 
-        for x in range(width):
-            for y in range(height):
-                color = image.getpixel((x, y))
+        image = imageio.imread("D:/CARLA/workspace/carla-ros/carla/duikangyangben.png")
+        height = len(image)
+        width = len(image[0])
+        texture = carla.TextureColor(width, height)
+        for x in range(0, width):
+            for y in range(0, height):
+                color = image[y][x]
+                print(color)
                 r = int(color[0])
                 g = int(color[1])
                 b = int(color[2])
-                a = int(color[3])
+                a = int(1)
                 texture.set(x, height - y - 1, carla.Color(r, g, b, a))
 
         # 将纹理应用到资产
-        world.apply_color_texture_to_object('duikang01_2', carla.MaterialParameter.Diffuse, texture, 0)
+        world.apply_color_texture_to_object('duikang01_2', carla.MaterialParameter.Diffuse, texture)
         print("地图中的对抗样本对象：", list(filter(lambda k: 'duikang01_2' in k, world.get_names_of_all_objects())))
         # 通过API查找世界中的对象名称
         # list(filter(lambda k: 'Apartment' in k, world.get_names_of_all_objects()))
