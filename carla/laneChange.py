@@ -172,10 +172,10 @@ def main():
         # 获取世界
         # world = client.get_world()
         world = client.load_world("Town04")
-        weather = carla.WeatherParameters(
-            sun_altitude_angle=0
-        )
-        world.set_weather(weather)
+        # weather = carla.WeatherParameters(
+        #     sun_altitude_angle=0
+        # )
+        # world.set_weather(weather)
         # 通过world获取world中的蓝图
         blueprint_library = world.get_blueprint_library()
 
@@ -275,6 +275,10 @@ def main():
                     #             next_w = world.get_map().get_waypoint(my_vehicle.get_location())
                     #             location = next_w.get_right_lane()
                     #             print("location => ", location)
+                    waypoints = world.get_map().get_waypoint(my_vehicle.get_location())
+                    waypoint = np.random.choice(waypoints.next(0.3))
+                    control_signal = control_vehicle.run_step(5, waypoint)
+                    my_vehicle.apply_control(control_signal)
                     if cv2.waitKey(25) & 0xFF == ord('a'):
                         waypoints = world.get_map().get_waypoint(my_vehicle.get_location())
                         waypoint = waypoints.next(0.3)[0]

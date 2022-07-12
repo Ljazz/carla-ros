@@ -28,7 +28,7 @@ def main():
         world = client.get_world()
 
         # 加载新的纹理
-        image = Image.open("1.jpg")
+        image = Image.open("D:/CARLA/carla/Unreal/CarlaUE4/Content/duikang01/Texture/duikangyangben.TGA")
         height = image.height  # image.size[1]
         width = image.width    # image.size[1]
 
@@ -43,10 +43,15 @@ def main():
                 b = int(color[2])
                 texture.set(x, y, carla.Color(r, g, b, a))
 
-        # 将纹理应用到建筑资产
-        world.apply_color_texture_to_object("duikang01_4")
+        # 将纹理应用到资产
+        world.apply_color_texture_to_object('duikang01_2', carla.MaterialParameter.Diffuse, texture)
+        print("地图中的对抗样本对象：", list(filter(lambda k: 'duikang01_2' in k, world.get_names_of_all_objects())))
         # 通过API查找世界中的对象名称
         # list(filter(lambda k: 'Apartment' in k, world.get_names_of_all_objects()))
-    except Exception:
+    finally:
         for actor in actors:
             actor.destroy()
+
+
+if __name__ == '__main__':
+    main()

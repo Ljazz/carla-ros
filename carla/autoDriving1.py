@@ -153,7 +153,7 @@ def main():
         while True:
             waypoints = world.get_map().get_waypoint(vehicle.get_location())
             waypoint = np.random.choice(waypoints.next(0.3))
-            control_signal = control_vehicle.run_step(5, waypoint)
+            control_signal = control_vehicle.run_step(10, waypoint)
             vehicle.apply_control(control_signal)
 
             # camera_bp = blueprintLibrary.find('sensor.camera.semantic_segmentation')
