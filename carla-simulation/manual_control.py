@@ -1,14 +1,3 @@
-#!/usr/bin/env python
-
-# Copyright (c) 2019 Computer Vision Center (CVC) at the Universitat Autonoma de
-# Barcelona (UAB).
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-# Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
-
 """
 Welcome to CARLA manual control.
 
@@ -54,35 +43,17 @@ Use ARROWS or WASD keys for control.
     ESC          : quit
 """
 
-from __future__ import print_function
-
-
-# ==============================================================================
-# -- find carla module ---------------------------------------------------------
-# ==============================================================================
-
-
-import glob
+import contextlib
 import os
 import sys
 
-try:
-    sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
-        sys.version_info.major,
-        sys.version_info.minor,
-        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
-except IndexError:
-    pass
-
-
+sys.path.insert(0,
+                "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
+sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
 # ==============================================================================
 # -- imports -------------------------------------------------------------------
 # ==============================================================================
 
-
-import carla
-
-from carla import ColorConverter as cc
 
 import argparse
 import collections
@@ -93,55 +64,16 @@ import random
 import re
 import weakref
 
-try:
-    import pygame
-    from pygame.locals import KMOD_CTRL
-    from pygame.locals import KMOD_SHIFT
-    from pygame.locals import K_0
-    from pygame.locals import K_9
-    from pygame.locals import K_BACKQUOTE
-    from pygame.locals import K_BACKSPACE
-    from pygame.locals import K_COMMA
-    from pygame.locals import K_DOWN
-    from pygame.locals import K_ESCAPE
-    from pygame.locals import K_F1
-    from pygame.locals import K_LEFT
-    from pygame.locals import K_PERIOD
-    from pygame.locals import K_RIGHT
-    from pygame.locals import K_SLASH
-    from pygame.locals import K_SPACE
-    from pygame.locals import K_TAB
-    from pygame.locals import K_UP
-    from pygame.locals import K_a
-    from pygame.locals import K_b
-    from pygame.locals import K_c
-    from pygame.locals import K_d
-    from pygame.locals import K_g
-    from pygame.locals import K_h
-    from pygame.locals import K_i
-    from pygame.locals import K_l
-    from pygame.locals import K_m
-    from pygame.locals import K_n
-    from pygame.locals import K_o
-    from pygame.locals import K_p
-    from pygame.locals import K_q
-    from pygame.locals import K_r
-    from pygame.locals import K_s
-    from pygame.locals import K_t
-    from pygame.locals import K_v
-    from pygame.locals import K_w
-    from pygame.locals import K_x
-    from pygame.locals import K_z
-    from pygame.locals import K_MINUS
-    from pygame.locals import K_EQUALS
-except ImportError:
-    raise RuntimeError('cannot import pygame, make sure pygame package is installed')
-
-try:
-    import numpy as np
-except ImportError:
-    raise RuntimeError('cannot import numpy, make sure numpy package is installed')
-
+import carla
+import numpy as np
+import pygame
+from carla import ColorConverter as cc
+from pygame.locals import (K_0, K_9, K_BACKQUOTE, K_BACKSPACE, K_COMMA, K_DOWN,
+                           K_EQUALS, K_ESCAPE, K_F1, K_LEFT, K_MINUS, K_PERIOD,
+                           K_RIGHT, K_SLASH, K_SPACE, K_TAB, K_UP, KMOD_CTRL,
+                           KMOD_SHIFT, K_a, K_b, K_c, K_d, K_g, K_h, K_i, K_l,
+                           K_m, K_n, K_o, K_p, K_q, K_r, K_s, K_t, K_v, K_w,
+                           K_x, K_z)
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -150,17 +82,18 @@ except ImportError:
 
 def find_weather_presets():
     rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
-    name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
+    def name_f(x): return ' '.join(m.group(0) for m in rgx.finditer(x))
     presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
-    return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
+    return [(getattr(carla.WeatherParameters, x), name_f(x)) for x in presets]
 
 
 def get_actor_display_name(actor, truncate=250):
     name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
     return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
 
-def get_actor_blueprints(world, filter, generation):
-    bps = world.get_blueprint_library().filter(filter)
+
+def get_actor_blueprints(world, actor_name, generation):
+    bps = world.get_blueprint_library().filter(actor_name)
 
     if generation.lower() == "all":
         return bps
@@ -173,13 +106,13 @@ def get_actor_blueprints(world, filter, generation):
     try:
         int_generation = int(generation)
         # Check if generation is in available generations
-        if int_generation in [1, 2]:
+        if int_generation in {1, 2}:
             bps = [x for x in bps if int(x.get_attribute('generation')) == int_generation]
             return bps
         else:
             print("   Warning! Actor Generation is not valid. No actor will be spawned.")
             return []
-    except:
+    except Exception:
         print("   Warning! Actor Generation is not valid. No actor will be spawned.")
         return []
 
@@ -197,7 +130,7 @@ class World(object):
         try:
             self.map = self.world.get_map()
         except RuntimeError as error:
-            print('RuntimeError: {}'.format(error))
+            print(f'RuntimeError: {error}')
             print('  The server could not send the OpenDRIVE (.xodr) file:')
             print('  Make sure it exists, has the same name of your town, and is correct.')
             sys.exit(1)
@@ -239,10 +172,10 @@ class World(object):
     def restart(self):
         self.player_max_speed = 1.589
         self.player_max_speed_fast = 3.713
-        # Keep same camera config if the camera manager exists.
+        # 如果相机管理器存在，保持相同的相机配置
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0
-        # Get a random blueprint.
+        # 随机获得一个蓝图
         blueprint = random.choice(get_actor_blueprints(self.world, self._actor_filter, self._actor_generation))
         blueprint.set_attribute('role_name', self.actor_role_name)
         if blueprint.has_attribute('color'):
@@ -253,12 +186,12 @@ class World(object):
             blueprint.set_attribute('driver_id', driver_id)
         if blueprint.has_attribute('is_invincible'):
             blueprint.set_attribute('is_invincible', 'true')
-        # set the max speed
+        # 设置最大速度
         if blueprint.has_attribute('speed'):
             self.player_max_speed = float(blueprint.get_attribute('speed').recommended_values[1])
             self.player_max_speed_fast = float(blueprint.get_attribute('speed').recommended_values[2])
 
-        # Spawn the player.
+        # 生成玩家
         if self.player is not None:
             spawn_point = self.player.get_transform()
             spawn_point.location.z += 2.0
@@ -298,22 +231,22 @@ class World(object):
         self._weather_index += -1 if reverse else 1
         self._weather_index %= len(self._weather_presets)
         preset = self._weather_presets[self._weather_index]
-        self.hud.notification('Weather: %s' % preset[1])
+        self.hud.notification(f'Weather: {preset[1]}')
         self.player.get_world().set_weather(preset[0])
 
     def next_map_layer(self, reverse=False):
         self.current_map_layer += -1 if reverse else 1
         self.current_map_layer %= len(self.map_layer_names)
         selected = self.map_layer_names[self.current_map_layer]
-        self.hud.notification('LayerMap selected: %s' % selected)
+        self.hud.notification(f'LayerMap selected: {selected}')
 
     def load_map_layer(self, unload=False):
         selected = self.map_layer_names[self.current_map_layer]
         if unload:
-            self.hud.notification('Unloading map layer: %s' % selected)
+            self.hud.notification(f'Unloading map layer: {selected}')
             self.world.unload_map_layer(selected)
         else:
-            self.hud.notification('Loading map layer: %s' % selected)
+            self.hud.notification(f'Loading map layer: {selected}')
             self.world.load_map_layer(selected)
 
     def toggle_radar(self):
@@ -324,13 +257,11 @@ class World(object):
             self.radar_sensor = None
 
     def modify_vehicle_physics(self, actor):
-        #If actor is not a vehicle, we cannot use the physics control
-        try:
+        # 如果actor不是车辆，我们不能使用物理控制
+        with contextlib.suppress(Exception):
             physics_control = actor.get_physics_control()
             physics_control.use_sweep_wheel_collision = True
             actor.apply_physics_control(physics_control)
-        except Exception:
-            pass
 
     def tick(self, clock):
         self.hud.tick(self, clock)
@@ -368,6 +299,7 @@ class World(object):
 
 class KeyboardControl(object):
     """Class that handles keyboard input."""
+
     def __init__(self, world, start_in_autopilot):
         self._autopilot_enabled = start_in_autopilot
         if isinstance(world.player, carla.Vehicle):
@@ -554,13 +486,13 @@ class KeyboardControl(object):
                 # Set automatic control-related vehicle lights
                 if self._control.brake:
                     current_lights |= carla.VehicleLightState.Brake
-                else: # Remove the Brake flag
+                else:  # Remove the Brake flag
                     current_lights &= ~carla.VehicleLightState.Brake
                 if self._control.reverse:
                     current_lights |= carla.VehicleLightState.Reverse
-                else: # Remove the Reverse flag
+                else:  # Remove the Reverse flag
                     current_lights &= ~carla.VehicleLightState.Reverse
-                if current_lights != self._lights: # Change the light state only if necessary
+                if current_lights != self._lights:  # Change the light state only if necessary
                     self._lights = current_lights
                     world.player.set_light_state(carla.VehicleLightState(self._lights))
             elif isinstance(self._control, carla.WalkerControl):
@@ -671,7 +603,7 @@ class HUD(object):
             'Map:     % 20s' % world.map.name.split('/')[-1],
             'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
             '',
-            'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
+            'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2)),
             u'Compass:% 17.0f\N{DEGREE SIGN} % 2s' % (compass, heading),
             'Accelero: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.accelerometer),
             'Gyroscop: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.gyroscope),
@@ -700,7 +632,8 @@ class HUD(object):
             'Number of vehicles: % 8d' % len(vehicles)]
         if len(vehicles) > 1:
             self._info_text += ['Nearby vehicles:']
-            distance = lambda l: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
+            def distance(l): return math.sqrt(
+                (l.x - t.location.x) ** 2 + (l.y - t.location.y) ** 2 + (l.z - t.location.z) ** 2)
             vehicles = [(distance(x.get_location()), x) for x in vehicles if x.id != world.player.id]
             for d, vehicle in sorted(vehicles, key=lambda vehicles: vehicles[0]):
                 if d > 200.0:
@@ -792,6 +725,7 @@ class FadingText(object):
 
 class HelpText(object):
     """Helper class to handle text output using pygame"""
+
     def __init__(self, font, width, height):
         lines = __doc__.split('\n')
         self.font = font
@@ -848,7 +782,7 @@ class CollisionSensor(object):
         actor_type = get_actor_display_name(event.other_actor)
         self.hud.notification('Collision with %r' % actor_type)
         impulse = event.normal_impulse
-        intensity = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
+        intensity = math.sqrt(impulse.x ** 2 + impulse.y ** 2 + impulse.z ** 2)
         self.history.append((event.frame, intensity))
         if len(self.history) > 4000:
             self.history.pop(0)
@@ -965,7 +899,7 @@ class RadarSensor(object):
         bound_y = 0.5 + self._parent.bounding_box.extent.y
         bound_z = 0.5 + self._parent.bounding_box.extent.z
 
-        self.velocity_range = 7.5 # m/s
+        self.velocity_range = 7.5  # m/s
         world = self._parent.get_world()
         self.debug = world.debug
         bp = world.get_blueprint_library().find('sensor.other.radar')
@@ -974,7 +908,7 @@ class RadarSensor(object):
         self.sensor = world.spawn_actor(
             bp,
             carla.Transform(
-                carla.Location(x=bound_x + 0.05, z=bound_z+0.05),
+                carla.Location(x=bound_x + 0.05, z=bound_z + 0.05),
                 carla.Rotation(pitch=5)),
             attach_to=self._parent)
         # We need a weak reference to self to avoid circular reference.
@@ -1008,7 +942,7 @@ class RadarSensor(object):
             def clamp(min_v, max_v, value):
                 return max(min_v, min(value, max_v))
 
-            norm_velocity = detect.velocity / self.velocity_range # range [-1, 1]
+            norm_velocity = detect.velocity / self.velocity_range  # range [-1, 1]
             r = int(clamp(0.0, 1.0, 1.0 - norm_velocity) * 255.0)
             g = int(clamp(0.0, 1.0, 1.0 - abs(norm_velocity)) * 255.0)
             b = int(abs(clamp(- 1.0, 0.0, - 1.0 - norm_velocity)) * 255.0)
@@ -1018,6 +952,7 @@ class RadarSensor(object):
                 life_time=0.06,
                 persistent_lines=False,
                 color=carla.Color(r, g, b))
+
 
 # ==============================================================================
 # -- CameraManager -------------------------------------------------------------
@@ -1038,16 +973,21 @@ class CameraManager(object):
 
         if not self._parent.type_id.startswith("walker.pedestrian"):
             self._camera_transforms = [
-                (carla.Transform(carla.Location(x=-2.0*bound_x, y=+0.0*bound_y, z=2.0*bound_z), carla.Rotation(pitch=8.0)), Attachment.SpringArm),
-                (carla.Transform(carla.Location(x=+0.8*bound_x, y=+0.0*bound_y, z=1.3*bound_z)), Attachment.Rigid),
-                (carla.Transform(carla.Location(x=+1.9*bound_x, y=+1.0*bound_y, z=1.2*bound_z)), Attachment.SpringArm),
-                (carla.Transform(carla.Location(x=-2.8*bound_x, y=+0.0*bound_y, z=4.6*bound_z), carla.Rotation(pitch=6.0)), Attachment.SpringArm),
-                (carla.Transform(carla.Location(x=-1.0, y=-1.0*bound_y, z=0.4*bound_z)), Attachment.Rigid)]
+                (carla.Transform(carla.Location(x=-2.0 * bound_x, y=+0.0 * bound_y, z=2.0 * bound_z),
+                                 carla.Rotation(pitch=8.0)), Attachment.SpringArm),
+                (
+                    carla.Transform(carla.Location(x=+0.8 * bound_x, y=+0.0 * bound_y, z=1.3 * bound_z)), Attachment.Rigid),
+                (carla.Transform(carla.Location(x=+1.9 * bound_x, y=+1.0 * bound_y, z=1.2 * bound_z)),
+                 Attachment.SpringArm),
+                (carla.Transform(carla.Location(x=-2.8 * bound_x, y=+0.0 * bound_y, z=4.6 * bound_z),
+                                 carla.Rotation(pitch=6.0)), Attachment.SpringArm),
+                (carla.Transform(carla.Location(x=-1.0, y=-1.0 * bound_y, z=0.4 * bound_z)), Attachment.Rigid)]
         else:
             self._camera_transforms = [
                 (carla.Transform(carla.Location(x=-2.5, z=0.0), carla.Rotation(pitch=-8.0)), Attachment.SpringArm),
                 (carla.Transform(carla.Location(x=1.6, z=1.7)), Attachment.Rigid),
-                (carla.Transform(carla.Location(x=2.5, y=0.5, z=0.0), carla.Rotation(pitch=-8.0)), Attachment.SpringArm),
+                (
+                    carla.Transform(carla.Location(x=2.5, y=0.5, z=0.0), carla.Rotation(pitch=-8.0)), Attachment.SpringArm),
                 (carla.Transform(carla.Location(x=-4.0, z=2.0), carla.Rotation(pitch=6.0)), Attachment.SpringArm),
                 (carla.Transform(carla.Location(x=0, y=-2.5, z=-0.0), carla.Rotation(yaw=90.0)), Attachment.Rigid)]
 
@@ -1058,16 +998,18 @@ class CameraManager(object):
             ['sensor.camera.depth', cc.Depth, 'Camera Depth (Gray Scale)', {}],
             ['sensor.camera.depth', cc.LogarithmicDepth, 'Camera Depth (Logarithmic Gray Scale)', {}],
             ['sensor.camera.semantic_segmentation', cc.Raw, 'Camera Semantic Segmentation (Raw)', {}],
-            ['sensor.camera.semantic_segmentation', cc.CityScapesPalette, 'Camera Semantic Segmentation (CityScapes Palette)', {}],
-            ['sensor.camera.instance_segmentation', cc.CityScapesPalette, 'Camera Instance Segmentation (CityScapes Palette)', {}],
+            ['sensor.camera.semantic_segmentation', cc.CityScapesPalette,
+             'Camera Semantic Segmentation (CityScapes Palette)', {}],
+            ['sensor.camera.instance_segmentation', cc.CityScapesPalette,
+             'Camera Instance Segmentation (CityScapes Palette)', {}],
             ['sensor.camera.instance_segmentation', cc.Raw, 'Camera Instance Segmentation (Raw)', {}],
             ['sensor.lidar.ray_cast', None, 'Lidar (Ray-Cast)', {'range': '50'}],
             ['sensor.camera.dvs', cc.Raw, 'Dynamic Vision Sensor', {}],
             ['sensor.camera.rgb', cc.Raw, 'Camera RGB Distorted',
-                {'lens_circle_multiplier': '3.0',
-                'lens_circle_falloff': '3.0',
-                'chromatic_aberration_intensity': '0.5',
-                'chromatic_aberration_offset': '0'}],
+             {'lens_circle_multiplier': '3.0',
+              'lens_circle_falloff': '3.0',
+              'chromatic_aberration_intensity': '0.5',
+              'chromatic_aberration_offset': '0'}],
             ['sensor.camera.optical_flow', cc.Raw, 'Optical Flow', {}],
         ]
         world = self._parent.get_world()
@@ -1207,7 +1149,7 @@ def game_loop(args):
         display = pygame.display.set_mode(
             (args.width, args.height),
             pygame.HWSURFACE | pygame.DOUBLEBUF)
-        display.fill((0,0,0))
+        display.fill((0, 0, 0))
         pygame.display.flip()
 
         hud = HUD(args.width, args.height)
@@ -1321,5 +1263,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()

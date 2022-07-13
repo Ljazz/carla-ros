@@ -1,66 +1,41 @@
-#!/usr/bin/env python
+"""
+ Author         : maxiaoming
+ Date           : 2022-07-12 18:58:55
+ LastEditors    : xiaoming.ma
+ LastEditTime   : 2022-07-13 12:10:52
+ FilePath       : automatic_control.py
+ Description    : Example of automatic vehicle control from client side.
+"""
 
-# Copyright (c) 2018 Intel Labs.
-# authors: German Ros (german.ros@intel.com)
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-"""Example of automatic vehicle control from client side."""
-
-from __future__ import print_function
 
 import argparse
 import collections
+import contextlib
 import datetime
 import glob
 import logging
 import math
 import os
-import numpy.random as random
 import re
 import sys
 import weakref
 
-try:
-    import pygame
-    from pygame.locals import KMOD_CTRL
-    from pygame.locals import K_ESCAPE
-    from pygame.locals import K_q
-except ImportError:
-    raise RuntimeError('cannot import pygame, make sure pygame package is installed')
-
-try:
-    import numpy as np
-except ImportError:
-    raise RuntimeError(
-        'cannot import numpy, make sure numpy package is installed')
+import numpy as np
+import numpy.random as random
+import pygame
+from pygame.locals import K_ESCAPE, KMOD_CTRL, K_q
 
 # ==============================================================================
-# -- Find CARLA module ---------------------------------------------------------
+# -- Add CARLA module and PythonAPI for release mode ---------------------------
 # ==============================================================================
-try:
-    sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
-        sys.version_info.major,
-        sys.version_info.minor,
-        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
-except IndexError:
-    pass
-
-# ==============================================================================
-# -- Add PythonAPI for release mode --------------------------------------------
-# ==============================================================================
-try:
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/carla')
-except IndexError:
-    pass
+sys.path.insert(0,
+                "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
+sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
 
 import carla
+from agents.navigation.basic_agent import BasicAgent
+from agents.navigation.behavior_agent import BehaviorAgent
 from carla import ColorConverter as cc
-
-from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
-from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
-
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -95,7 +70,7 @@ class World(object):
         try:
             self.map = self.world.get_map()
         except RuntimeError as error:
-            print('RuntimeError: {}'.format(error))
+            print(f'RuntimeError: {error}')
             print('  The server could not send the OpenDRIVE (.xodr) file:')
             print('  Make sure it exists, has the same name of your town, and is correct.')
             sys.exit(1)
@@ -165,17 +140,15 @@ class World(object):
         self._weather_index += -1 if reverse else 1
         self._weather_index %= len(self._weather_presets)
         preset = self._weather_presets[self._weather_index]
-        self.hud.notification('Weather: %s' % preset[1])
+        self.hud.notification(f'Weather: {preset[1]}')
         self.player.get_world().set_weather(preset[0])
 
     def modify_vehicle_physics(self, actor):
-        #If actor is not a vehicle, we cannot use the physics control
-        try:
+        # If actor is not a vehicle, we cannot use the physics control
+        with contextlib.suppress(Exception):
             physics_control = actor.get_physics_control()
             physics_control.use_sweep_wheel_collision = True
             actor.apply_physics_control(physics_control)
-        except Exception:
-            pass
 
     def tick(self, clock):
         """Method for every tick"""
@@ -218,9 +191,8 @@ class KeyboardControl(object):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return True
-            if event.type == pygame.KEYUP:
-                if self._is_quit_shortcut(event.key):
-                    return True
+            if event.type == pygame.KEYUP and self._is_quit_shortcut(event.key):
+                return True
 
     @staticmethod
     def _is_quit_shortcut(key):
@@ -337,7 +309,7 @@ class HUD(object):
 
     def error(self, text):
         """Error text"""
-        self._notifications.set_text('Error: %s' % text, (255, 0, 0))
+        self._notifications.set_text(f'Error: {text}', (255, 0, 0))
 
     def render(self, display):
         """Render for HUD class"""
@@ -515,9 +487,9 @@ class LaneInvasionSensor(object):
         self = weak_self()
         if not self:
             return
-        lane_types = set(x.type for x in event.crossed_lane_markings)
+        lane_types = {x.type for x in event.crossed_lane_markings}
         text = ['%r' % str(x).split()[-1] for x in lane_types]
-        self.hud.notification('Crossed line %s' % ' and '.join(text))
+        self.hud.notification(f"Crossed line {' and '.join(text)}")
 
 # ==============================================================================
 # -- GnssSensor --------------------------------------------------------
@@ -636,7 +608,7 @@ class CameraManager(object):
     def toggle_recording(self):
         """Toggle recording on or off"""
         self.recording = not self.recording
-        self.hud.notification('Recording %s' % ('On' if self.recording else 'Off'))
+        self.hud.notification(f"Recording {'On' if self.recording else 'Off'}")
 
     def render(self, display):
         """Render method"""
