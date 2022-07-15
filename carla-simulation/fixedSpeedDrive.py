@@ -32,15 +32,18 @@ def main():
         argparser = argparse.ArgumentParser()
         argparser.add_argument(
             '--map',
-            help='map name'
+            help='map name',
+            default='Town04',
         )
         argparser.add_argument(
             '--vehicle',
-            help='vehicle name'
+            help='vehicle name',
+            default='bmw',
         )
         argparser.add_argument(
             '--filename',
-            help="视频名称"
+            help="视频名称",
+            default='result.mp4'
         )
 
         points = {
