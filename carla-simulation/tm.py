@@ -1,5 +1,12 @@
-import carla
+import sys
+
+sys.path.insert(0,
+                "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
+sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
+
 import random
+
+import carla
 
 # Connect to the client and retrieve the world object
 client = carla.Client('localhost', 2000)
