@@ -25,7 +25,6 @@ sys.path.append('D:/CARLA/carla/PythonAPI/carla')
 
 
 import carla
-from agents.navigation.controller import VehiclePIDController
 
 VEHICLE_VEL = 5
 
@@ -134,35 +133,12 @@ def main():
     # 存储生成的actor
     actor_list = []
     try:
-        argparser = argparse.ArgumentParser()
-        argparser.add_argument(
-            '--map',
-            help='map name',
-            default='Town04',
-        )
-        argparser.add_argument(
-            '--vehicle',
-            help='vehicle name',
-            default='bmw',
-        )
-        argparser.add_argument(
-            '--filename',
-            help="视频名称",
-            default='result.mp4'
-        )
-
-        args = argparser.parse_args()
-
-        map_name = args.map
-        filename = args.filename
-
         # 创建client链接到Carla当中
         client = carla.Client('localhost', 2000)
         # 设置超时时间
         client.set_timeout(10.0)
         # 获取世界
-        # world = client.get_world()
-        world = client.load_world(map_name)
+        world = client.get_world()
         spectator = world.get_spectator()
         actor_list.append(spectator)
         # weather = carla.WeatherParameters(
@@ -175,7 +151,7 @@ def main():
 
         # 生成车辆
         vehicle_bp = random.choice(blueprint_library.filter('vehicle.bmw.grandtourer'))
-        model3_spawn_point = spawn_points[326]
+        model3_spawn_point = spawn_points[81]
         my_vehicle = world.spawn_actor(vehicle_bp, model3_spawn_point)
 
         # 设置RGB相机的分辨率和视野
@@ -225,13 +201,11 @@ def main():
         my_vehicle.enable_constant_velocity(carla.Vector3D(2.5, 0, 0))
 
         width, height = int(image_size_x), int(image_size_y)  # 宽高
-        if filename.split('.')[-1] == 'mp4':
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 视频编解码器
-        else:
-            fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 视频编解码器
+        # fourcc = cv2.VideoWriter_fourcc(*'MP4V')
         # fps = 40
         fps = 30
-        writer = cv2.VideoWriter(filename, fourcc, fps, (width, height))
+        writer = cv2.VideoWriter('result.mp4', fourcc, fps, (width, height))
         try:
             i = 0
             while True:
