@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-18 15:47:57
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-18 18:13:39
+ LastEditTime   : 2022-07-18 18:17:50
  FilePath       : traffic_manager.py
  Description    : 交通管理器
 """
@@ -213,14 +213,14 @@ def main():
                 world.wait_for_tick()
     finally:
         world.apply_settings(origin_settings)
-        print('\ndestroying %d vehicles' % len(vehicles_id_list))
+        print('\ndestroying %d vehicles' % len(vehicle_id_list))
 
-        client.apply_batch([carla.command.DestroyActor(x) for x in vehicles_id_list])
+        client.apply_batch([carla.command.DestroyActor(x) for x in vehicle_id_list])
         camera.destroy()
         cv2.destroyAllWindows()
 
         time.sleep(0.5)
-        
+
 
 if __name__ == '__main__':
 
