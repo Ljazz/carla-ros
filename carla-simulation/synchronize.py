@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-18 11:48:33
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-18 14:40:12
+ LastEditTime   : 2022-07-18 15:48:07
  FilePath       : synchronize.py
  Description    : 同步模式
 """
