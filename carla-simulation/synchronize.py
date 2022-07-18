@@ -2,14 +2,13 @@
  Author         : maxiaoming
  Date           : 2022-07-18 11:48:33
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-18 12:11:33
+ LastEditTime   : 2022-07-18 14:40:12
  FilePath       : synchronize.py
  Description    : 同步模式
 """
 import random
 import sys
 from queue import Empty, Queue
-from select import kevent
 
 sys.path.insert(0,
                 "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
