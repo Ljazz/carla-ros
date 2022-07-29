@@ -111,7 +111,9 @@ def main():
 
         # 设置同步模式
         settings = world.get_settings()
+        orig_settings = world.get_settings()
         settings.synchronous_mode = True
+        settings.fixed_delta_seconds = 0.05
         world.apply_settings(settings)
 
         # 设置天气
@@ -186,7 +188,7 @@ def main():
             camera_bp, camera_init, attach_to=my_vehicle)
         image_queue = queue.Queue()
         # my_camera.listen(lambda image: parse_image(image))
-        my_camera.listen(image_queue)
+        my_camera.listen(image_queue.put)
         actor_list.extend((my_camera, my_vehicle, test_vehicle))
 
         def parse_image(image):
@@ -215,6 +217,10 @@ def main():
             while True:
                 world.tick()
                 image = image_queue.get()
+                array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+                array = np.reshape(array, (image.height, image.width, 4))
+                array = array[:, :, :3]
+                image = copy.copy(array)
                 writer.write(image)
                 cv2.imshow('Carla Tutorial', image)
                 if cv2.waitKey(20) & 0xFF == ord('q'):
@@ -233,6 +239,7 @@ def main():
                 #         break
         finally:
             writer.release()
+            world.apply_settings(orig_settings)
 
     finally:
         for actor in actor_list:
