@@ -2,7 +2,7 @@
  Author         : maxiaoming
  Date           : 2022-07-29 14:06:49
  LastEditors    : xiaoming.ma
- LastEditTime   : 2022-07-29 14:12:02
+ LastEditTime   : 2022-07-29 14:20:45
  FilePath       : car_run_line_sync.py
  Description    : 直线行驶，同步模式
 """
@@ -16,7 +16,6 @@
 """
 
 import queue
-import carla
 import numpy as np
 import cv2
 import random
@@ -24,10 +23,12 @@ import copy
 import argparse
 import os
 import sys
+
 sys.path.insert(0,
                 "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
 sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
 
+import carla
 
 def main():
     """
