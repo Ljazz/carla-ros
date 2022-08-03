@@ -7,16 +7,16 @@
  Description    : 通过 API 更新纹理
 """
 
+import imageio
+from PIL import Image
+import itertools
 import sys
 
 sys.path.insert(0,
                 "/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg")
 sys.path.append("/home/realai/zhujianwei/vehicle_automation/carla/PythonAPI")
 
-from PIL import Image
-
-import carla
-import imageio
+import carla  # noqa
 
 
 def main():
