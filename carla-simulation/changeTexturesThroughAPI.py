@@ -50,23 +50,25 @@ def main():
         #         b = int(color[2])
         #         texture.set(x, y, carla.Color(r, g, b, a))
 
-        image = imageio.imread("D:/CARLA/workspace/carla-ros/carla/duikangyangben.png")
+        image = imageio.imread(
+            "D:/CARLA/workspace/carla-ros/carla/duikangyangben.png")
         height = len(image)
         width = len(image[0])
         texture = carla.TextureColor(width, height)
-        for x in range(0, width):
-            for y in range(0, height):
-                color = image[y][x]
-                print(color)
-                r = int(color[0])
-                g = int(color[1])
-                b = int(color[2])
-                a = int(1)
-                texture.set(x, height - y - 1, carla.Color(r, g, b, a))
+        a = 1
+        for x, y in itertools.product(range(width), range(height)):
+            color = image[y][x]
+            print(color)
+            r = int(color[0])
+            g = int(color[1])
+            b = int(color[2])
+            texture.set(x, height - y - 1, carla.Color(r, g, b, a))
 
         # 将纹理应用到资产
-        world.apply_color_texture_to_object('duikang01_2', carla.MaterialParameter.Diffuse, texture)
-        print("地图中的对抗样本对象：", list(filter(lambda k: 'duikang01_2' in k, world.get_names_of_all_objects())))
+        world.apply_color_texture_to_object(
+            'duikang01_2', carla.MaterialParameter.Diffuse, texture)
+        print("地图中的对抗样本对象：", list(
+            filter(lambda k: 'duikang01_2' in k, world.get_names_of_all_objects())))
         # 通过API查找世界中的对象名称
         # list(filter(lambda k: 'Apartment' in k, world.get_names_of_all_objects()))
     finally:
