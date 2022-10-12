@@ -101,13 +101,16 @@ def parse_image(image):
     Image_Array = array
     # array = array[:, :, ::-1]
 
-
+fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+fps = 40
+writer = cv2.VideoWriter('result.mp4', fourcc, fps, (1920, 1080))
 while True:
     if Image_Array is not None:
         image = copy.copy(Image_Array)
         if Cars is not None:
             for (x, y, w, h) in Cars:
                 cv2.rectangle(image, (int(x), int(y)), (int(x+w), int(y+h)), (255, 0, 0), 2)
+        writer.write(image)
         cv2.imshow('Carla Tutorial', image)
     if cv2.waitKey(25) & 0xFF == ord('q'):
         # destroy cv2 window when 'q' is pressed
